@@ -5,7 +5,6 @@
 //all it does is check for input from the leader arduino
 //and update light array if necessary
 
-#include <Wire.h>
 
 
 //pins to check for communication
