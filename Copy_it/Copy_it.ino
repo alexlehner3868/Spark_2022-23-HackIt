@@ -2,6 +2,46 @@
 // Brian -> set up real arrays 8x8, picture and output, 
 
 
+int selected_image_index = 0;
+
+const int ARRAY_SIZE = 8;  
+
+bool compare_images(){
+    for(int i = 0; i < ARRAY_SIZE; i++){
+        for(int j = 0; j < ARRAY_SIZE; j++){
+            //TODO -> Do comparing of two pictures here, if not same, return false 
+        }
+    }
+    return true;
+}
+
+// Reset all of the leds on the output board and put the cursor in the top right again 
+void clear_output(){
+
+}
+
+void load_image(){
+    // Select a random image from the array of images
+    // Display the image on the image reference led grid 
+}
+
+void setup(){
+    // Setup joystick 
+    // Set up color buttons 
+
+}
+
+void loop(){
+    if(!compare_images()){
+        
+    }else{
+        // Select a new image and reset the output board 
+        clear_output();
+        load_image();
+    }
+
+}
+
 
 
 /*** TEMPORARY holding for patterns

@@ -77,6 +77,4 @@ void show_image(){
 void loop()
 {
   
-
-  
 }
