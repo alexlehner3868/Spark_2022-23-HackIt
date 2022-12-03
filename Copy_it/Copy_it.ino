@@ -5,6 +5,8 @@
 int selected_image_index = 0;
 int current_user_x = 0;
 int current_user_y = 0;
+bool currently_playing = true;
+bool start_game = false;
 
 const int ARRAY_SIZE = 8;  
 
@@ -49,16 +51,24 @@ void check_for_color_change(){
     // if yes, update the output led's color at current_user_x, current_user_y
 }
 
+void check_for_image_verify(){
+    // check if the verify button has been pressed.
+    // if pressed -> compare_images() 
+}
+
 void loop(){
-    if(!compare_images()){
-        //Check for movement 
+    if(start_game){
+        clear_output();
+        load_image();
+        start_game = false;
+        currently_playing = true;
+    }
+
+    if(currently_playing){
         check_joystick_movement();
         flash_current_location();
         check_for_color_change(); 
-    }else{
-        // Select a new image and reset the output board 
-        clear_output();
-        load_image();
+        check_for_image_verify();
     }
 }
 
