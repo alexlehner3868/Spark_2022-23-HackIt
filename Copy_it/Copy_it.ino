@@ -3,6 +3,8 @@
 
 
 int selected_image_index = 0;
+int current_user_x = 0;
+int current_user_y = 0;
 
 const int ARRAY_SIZE = 8;  
 
@@ -31,15 +33,33 @@ void setup(){
 
 }
 
+
+void check_joystick_movement(){
+    //check if joystick has been moved 
+    // if so, updated current_user_x and current_user_y
+    // restrict the coordinates to being on the screen only (hard limit or go to other side )
+}
+
+void flash_current_location(){
+    // flash the output led at current_user_x, current_user_y
+}
+
+void check_for_color_change(){
+    //check if a color button has been pressed
+    // if yes, update the output led's color at current_user_x, current_user_y
+}
+
 void loop(){
     if(!compare_images()){
-        
+        //Check for movement 
+        check_joystick_movement();
+        flash_current_location();
+        check_for_color_change(); 
     }else{
         // Select a new image and reset the output board 
         clear_output();
         load_image();
     }
-
 }
 
 
