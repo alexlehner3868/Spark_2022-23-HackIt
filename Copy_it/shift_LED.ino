@@ -62,9 +62,7 @@ void setup()
   
 }
 
-void loop()
-{
-  
+void show_image(){
   gridToBytes(LED_grid, byte_array);
   setLED(LATCH_PIN, CLOCK_PIN, DATA_PIN, byte_array);
   
@@ -74,5 +72,11 @@ void loop()
     }
   }
   delay(1000);
+}
+
+void loop()
+{
+  
+
   
 }
