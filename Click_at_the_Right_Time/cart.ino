@@ -17,13 +17,21 @@ void setup() {
   randElement = random(0,24);
 }
 
-// Function to select a new random target led
+// Function to select a new random target led and increase speed
 void reset() {
+  int oldRand = randElement;
   leds[randElement] = CRGB::Black;
   FastLED.show();
   randElement = random(0,24);
+  // Re-select the randElement if it picks the same or an LED beside the old LED
+  while (randElement == oldRand || randElement == (oldRand + 1) || randElement == (oldRand - 1)) {
+    randElement = random(0,24);
+  }
   Serial.println(randElement);
   clockwise = !clockwise;
+  if (delaySpeed > 100) {
+    delaySpeed -= 25;
+  }
 }
 
 // Function to run clockwise/left to right direction
