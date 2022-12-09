@@ -1,0 +1,23 @@
+These are some potential patterns we could use for the game. Admittedly it's a little bit difficult to fit some patterns on a 5x5 grid but some well-known symbols 
+that are tangentially related to spy stuff is still better than nothing. A '*' indicates an unfilled tile while a 'X' indicates a filled tile. */
+
+X   X  This one shouldn't be too hard to implement: we can start by lighting both ends of the top array and then shift both by four, then the left one by another.
+ X X
+  X
+ X X
+X   X
+
+XXXXX  Supposed to look like a gun, ideally if the arrays are closer on the actual design this will be more convincing
+XXXXX
+XX 
+X
+X
+
+  X    Supposed to look like a crosshair 
+  X
+X X X
+  X
+  X
+  
+We can start out with these three and see how they look like on the LEDs, and then move on from there. We always have the option to come up with more designs, of course.
+
