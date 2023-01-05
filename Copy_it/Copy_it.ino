@@ -8,12 +8,72 @@ int current_user_y = 0;
 bool currently_playing = true;
 bool start_game = false;
 
+// Color Macros
+#define N 0b0000 // N(o color)
+#define R 0b0100
+#define G 0b0010
+#define B 0b0001
+#define Y 0b0110 // Y(ellow)
+#define C 0b0001 // C(yan)
+#define M 0b0101 // M(agenta)
+#define W 0b0111 // W(hite)
+
 const int ARRAY_SIZE = 8;  
+const int LATCH_PIN = 11;
+const int CLOCK_PIN = 9;
+const int DISPLAY_GRID_PIN = 12;
+const int COPY_GRID_PIN = 8;
+const int REG_NUM = ARRAY_SIZE * ARRAY_SIZE / 2; // Number of shift registers to be used per grid
+
+int display_grid[ARRAY_SIZE][ARRAY_SIZE] = {{R, G, B, N, R, G, B, N},
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}};
+
+int copy_grid[ARRAY_SIZE][ARRAY_SIZE] =    {{R, G, B, N, R, G, B, N},
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}, 
+                                            {R, G, B, N, R, G, B, N}};
+
+// Create byte array for shifting out
+void gridToBytes(int grid[][ARRAY_SIZE], byte byte_array[]) {
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        for (int j = 0; j < ARRAY_SIZE; j += 2) {
+        byte_array[(i * ARRAY_SIZE + j) / 2] = ((grid[i][j] << 4) + grid[i][j + 1]);
+        }
+    }
+}
+
+// Shift out byte array to shift registers
+void setLED(int latch_pin, int clock_pin, int data_pin, byte byte_array[]){
+    digitalWrite(latch_pin, LOW);
+    
+    for (int i = 0; i < REG_NUM; i++) {
+        shiftOut(data_pin, clock_pin, MSBFIRST, byte_array[i]);
+    }
+    
+    digitalWrite(latch_pin, HIGH);
+}
+
+// Outputs grid to physical circuit
+void show_image(int grid[][ARRAY_SIZE]){
+    byte byte_array[REG_NUM];
+    gridToBytes(grid, byte_array);
+    setLED(LATCH_PIN, CLOCK_PIN, DATA_PIN, byte_array);
+}
 
 bool compare_images(){
     for(int i = 0; i < ARRAY_SIZE; i++){
         for(int j = 0; j < ARRAY_SIZE; j++){
-            //TODO -> Do comparing of two pictures here, if not same, return false 
+            if (display_grid[i][j] != copy_grid[i][j]) return false;
         }
     }
     return true;
@@ -21,7 +81,13 @@ bool compare_images(){
 
 // Reset all of the leds on the output board and put the cursor in the top right again 
 void clear_output(){
-
+    for(int i = 0; i < ARRAY_SIZE; i++){
+        for(int j = 0; j < ARRAY_SIZE; j++){
+            copy_grid[i][j] = N;
+        }
+    }
+    current_user_x = 0;
+    current_user_y = 0;
 }
 
 void load_image(){
@@ -30,6 +96,11 @@ void load_image(){
 }
 
 void setup(){
+    // Set up pins for shift registers
+    pinMode(LATCH_PIN, OUTPUT);
+    pinMode(CLOCK_PIN, OUTPUT);
+    pinMode(DISPLAY_GRID_PIN, OUTPUT);
+    pinMode(COPY_GRID_PIN, OUTPUT);
     // Setup joystick 
     // Set up color buttons 
 
@@ -65,6 +136,8 @@ void loop(){
     }
 
     if(currently_playing){
+        show_image(display_grid);
+        show_image(copy_grid);
         check_joystick_movement();
         flash_current_location();
         check_for_color_change(); 
