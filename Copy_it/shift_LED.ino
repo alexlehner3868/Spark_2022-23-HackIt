@@ -17,17 +17,6 @@
 // 4. LED to register output connection is as follows:
 //        0rgb0rgb
 //        76543210
-const int JOYSTICK_UP = 0;
-const int JOYSTICK_DOWN = 1;
-const int JOYSTICK_LEFT = 2;
-const int JOYSTICK_RIGHT = 3;
-
-const int RED = 4;
-const int BLUE = 5;
-const int GREEN = 6;
-
-const int CHECK_BUTTON = 7;
-const int DELETE_COLOR = 8;
  
 const int LATCH_PIN = 11;
 const int CLOCK_PIN = 9;
@@ -42,8 +31,6 @@ const int BYTE_NUM = ROW_NUM * ROW_NUM / 2; // Number of bytes to be shifted out
 int LED_grid[ROW_NUM][COL_NUM] = {{0b0111, 0b0010}, {0b0001, 0b0100}};
 byte byte_array[BYTE_NUM];
 //for grid
-int updown;
-int leftright;
 
 // gridToBytes function converts 2D int array into 1D byte array
 // COL_NUM should be used as grid dimension, 2 is used here due to tinkedcad limitations
@@ -66,53 +53,9 @@ void setLED(int latch_pin, int clock_pin, int data_pin, byte byte_array[]){
   
   digitalWrite(latch_pin, HIGH);
 }
-void move_up() {
-  updown--;
-  if (updown == -1) {
-    updown = 7;
-  }
-}
-void move_down() {
-  updown++;
-  if (updown == 8) {
-    updown = 0;
-  }
-}
-void move_left() {
-  leftright--;
-  if (leftright == -1) {
-    leftright = 7;
-  }
-}
-void move_right() {
-  leftright++;
-  if (leftright == 8) {
-    leftright = 0;
-  }
-}
-
-void check_joystick() {
-  if (digitalRead(JOYSTICK_UP)) {
-    move_up();
-  } else if (digitalRead(JOYSTICK_DOWN)) {
-    move_down();
-  } else if (digitalRead(JOYSTICK_LEFT)) {
-    move_left();
-  } else if (digitalRead(JOYSTICK_RIGHT)) {
-    move_right();
-  } else {
-  }
-}
 
 // setup and loop is mainly for testing and demo purposes
-void setup()
-{
-  pinMode(LATCH_PIN, OUTPUT);
-  pinMode(CLOCK_PIN, OUTPUT);
-  pinMode(DATA_PIN, OUTPUT);
-  updown = 0;
-  leftright = 0;
-}
+
 
 void show_image(){
   gridToBytes(LED_grid, byte_array);
@@ -125,8 +68,17 @@ void show_image(){
   }
   delay(1000);
 }
-
+/*
+void setup()
+{
+  pinMode(LATCH_PIN, OUTPUT);
+  pinMode(CLOCK_PIN, OUTPUT);
+  pinMode(DATA_PIN, OUTPUT);
+  updown = 0;
+  leftright = 0;
+}
 void loop()
 {
   
 }
+*/

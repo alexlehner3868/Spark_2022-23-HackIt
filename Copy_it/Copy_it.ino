@@ -18,12 +18,28 @@ bool start_game = false;
 #define M 0b0101 // M(agenta)
 #define W 0b0111 // W(hite)
 
+
+const int JOYSTICK_UP = 0;
+const int JOYSTICK_DOWN = 1;
+const int JOYSTICK_LEFT = 2;
+const int JOYSTICK_RIGHT = 3;
+
+const int RED = 4;
+const int BLUE = 5;
+const int GREEN = 6;
+
+const int CHECK_BUTTON = 7;
+const int DELETE_COLOR = 8;
+
 const int ARRAY_SIZE = 8;  
 const int LATCH_PIN = 11;
 const int CLOCK_PIN = 9;
 const int DISPLAY_GRID_PIN = 12;
 const int COPY_GRID_PIN = 8;
 const int REG_NUM = ARRAY_SIZE * ARRAY_SIZE / 2; // Number of shift registers to be used per grid
+
+int updown;
+int leftright;
 
 int display_grid[ARRAY_SIZE][ARRAY_SIZE] = {{R, G, B, N, R, G, B, N},
                                             {R, G, B, N, R, G, B, N}, 
@@ -107,10 +123,42 @@ void setup(){
 }
 
 
-void check_joystick_movement(){
-    //check if joystick has been moved 
-    // if so, updated current_user_x and current_user_y
-    // restrict the coordinates to being on the screen only (hard limit or go to other side )
+void move_up() {
+  updown--;
+  if (updown == -1) {
+    updown = 7;
+  }
+}
+void move_down() {
+  updown++;
+  if (updown == 8) {
+    updown = 0;
+  }
+}
+void move_left() {
+  leftright--;
+  if (leftright == -1) {
+    leftright = 7;
+  }
+}
+void move_right() {
+  leftright++;
+  if (leftright == 8) {
+    leftright = 0;
+  }
+}
+
+void check_joystick_movement() {
+  if (digitalRead(JOYSTICK_UP)) {
+    move_up();
+  } else if (digitalRead(JOYSTICK_DOWN)) {
+    move_down();
+  } else if (digitalRead(JOYSTICK_LEFT)) {
+    move_left();
+  } else if (digitalRead(JOYSTICK_RIGHT)) {
+    move_right();
+  } else {
+  }
 }
 
 void flash_current_location(){
