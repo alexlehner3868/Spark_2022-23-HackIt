@@ -84,14 +84,6 @@ void clockwiseCycle() {
         checkTime = 0;
         break;
       }
-      /*MIGUEL: dock points if missed the press (too late)
-      else if ((currTime2 - checkTime > delaySpeed) && digitalRead(12) == LOW){
-        Serial.println("pressed too late");
-        score = score - 100;
-        Serial.println(score);
-        break;
-      }
-      */
     }
     if (!repeat) {
       break;
