@@ -13,7 +13,7 @@ bool firstTimeThru = true;
 void setup() {
   LEDS.addLeds<WS2812B, 11, GRB>(leds, 24);
   pinMode(12, INPUT_PULLUP);
-  score = 500;
+  score = 1000;
 
   Serial.begin(9600);
   randomSeed(analogRead(0));
@@ -36,6 +36,7 @@ void clockwiseCycle() {
   long checkTime = 0;
   long currTime = 0;
   bool repeat = true;
+  bool successfullyPressed = false;
 
   for (int i = currLed; i < 24; i ++) {
     currTime = millis();
@@ -58,6 +59,7 @@ void clockwiseCycle() {
     }
     pastLed = &leds[i];
     FastLED.show();
+    successfullyPressed = false;
   
     while(millis() < currTime + delaySpeed) {
       // Check if user input was instated during correct time frame
@@ -74,16 +76,23 @@ void clockwiseCycle() {
         checkTime = 0;
         repeat = false;
         firstTimeThru = false;
+        successfullyPressed = true;
         break;
       }
       //MIGUEL: dock points if missed the press (didn't press at all)
       else if ((currTime2 - checkTime <= delaySpeed-firstTimeOffset) && digitalRead(12) == HIGH){
         Serial.println("let led pass over without pressing");
-        score = score - 50;
+        score = score - 5;
         Serial.println(score);
         checkTime = 0;
         break;
       }
+    }
+    if ((millis() - checkTime > delaySpeed) && digitalRead(12)== LOW && !successfullyPressed){
+      Serial.println("pressed at wrong time");
+      score = score - 10;
+      Serial.println(score);
+      repeat = true;
     }
     if (!repeat) {
       break;
@@ -103,6 +112,7 @@ void counterclockwiseCycle() {
   long checkTime = 0;
   long currTime = 0;
   bool repeat = true;
+  bool successfullyPressed = false
 
   for (int i = currLed; i >= 0; i --) {
     currTime = millis();
@@ -125,6 +135,7 @@ void counterclockwiseCycle() {
     }
     pastLed = &leds[i];
     FastLED.show();
+    successfullyPressed = false;
 
     while(millis() < currTime + delaySpeed) {
       long currTime3 = millis();
@@ -136,16 +147,23 @@ void counterclockwiseCycle() {
         currLed = i;
         checkTime = 0;
         repeat = false;
+        successfullyPressed = true;
         break;
       }
       else if ((currTime3 - checkTime <= delaySpeed) && digitalRead(12) == HIGH){
         Serial.println("let led pass over without pressing");
-        score = score - 50;
+        score = score - 5;
         Serial.println(score);
         checkTime = 0;
         break;
       }
       
+    }
+    if ((millis() - checkTime > delaySpeed) && digitalRead(12)== LOW && !successfullyPressed){
+      Serial.println("pressed at wrong time");
+      score = score - 10;
+      Serial.println(score);
+      repeat = true;
     }
     if (!repeat) {
       break;
