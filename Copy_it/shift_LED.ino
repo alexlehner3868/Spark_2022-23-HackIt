@@ -17,7 +17,7 @@
 // 4. LED to register output connection is as follows:
 //        0rgb0rgb
 //        76543210
-
+ 
 const int LATCH_PIN = 11;
 const int CLOCK_PIN = 9;
 const int DATA_PIN = 12;
@@ -30,6 +30,7 @@ const int BYTE_NUM = ROW_NUM * ROW_NUM / 2; // Number of bytes to be shifted out
 // LED_grid variable is for testing and demo purposes
 int LED_grid[ROW_NUM][COL_NUM] = {{0b0111, 0b0010}, {0b0001, 0b0100}};
 byte byte_array[BYTE_NUM];
+//for grid
 
 // gridToBytes function converts 2D int array into 1D byte array
 // COL_NUM should be used as grid dimension, 2 is used here due to tinkedcad limitations
@@ -54,17 +55,9 @@ void setLED(int latch_pin, int clock_pin, int data_pin, byte byte_array[]){
 }
 
 // setup and loop is mainly for testing and demo purposes
-void setup()
-{
-  pinMode(LATCH_PIN, OUTPUT);
-  pinMode(CLOCK_PIN, OUTPUT);
-  pinMode(DATA_PIN, OUTPUT);
-  
-}
 
-void loop()
-{
-  
+
+void show_image(){
   gridToBytes(LED_grid, byte_array);
   setLED(LATCH_PIN, CLOCK_PIN, DATA_PIN, byte_array);
   
@@ -74,5 +67,18 @@ void loop()
     }
   }
   delay(1000);
+}
+/*
+void setup()
+{
+  pinMode(LATCH_PIN, OUTPUT);
+  pinMode(CLOCK_PIN, OUTPUT);
+  pinMode(DATA_PIN, OUTPUT);
+  updown = 0;
+  leftright = 0;
+}
+void loop()
+{
   
 }
+*/
