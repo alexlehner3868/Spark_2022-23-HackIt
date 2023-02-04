@@ -60,31 +60,22 @@ int copy_grid[ARRAY_SIZE][ARRAY_SIZE] =    {{R, G, B, N, R, G, B, N},
                                             {R, G, B, N, R, G, B, N}, 
                                             {R, G, B, N, R, G, B, N}};
 
-// Create byte array for shifting out
-void gridToBytes(int grid[][ARRAY_SIZE], byte byte_array[]) {
-    for (int i = 0; i < ARRAY_SIZE; i++) {
-        for (int j = 0; j < ARRAY_SIZE; j += 2) {
-        byte_array[(i * ARRAY_SIZE + j) / 2] = ((grid[i][j] << 4) + grid[i][j + 1]);
-        }
-    }
-}
-
-// Shift out byte array to shift registers
-void setLED(int latch_pin, int clock_pin, int data_pin, byte byte_array[]){
+// shift int grid values to shift registers
+void setLED(int latch_pin, int clock_pin, int data_pin, int grid[][ARRAY_SIZE]) {
     digitalWrite(latch_pin, LOW);
     
-    for (int i = 0; i < REG_NUM; i++) {
-        shiftOut(data_pin, clock_pin, MSBFIRST, byte_array[i]);
+    for (int i = 0; i < ARRAY_SIZE; i++) {
+        for (int j = 0; j < ARRAY_SIZE; j += 2) {
+            shiftOut(data_pin, clock_pin, latch_pin, (grid[i][j] << 4) + grid[i][j + 1]);
+        }
     }
     
     digitalWrite(latch_pin, HIGH);
 }
 
 // Outputs grid to physical circuit
-void show_image(int grid[][ARRAY_SIZE]){
-    byte byte_array[REG_NUM];
-    gridToBytes(grid, byte_array);
-    setLED(LATCH_PIN, CLOCK_PIN, DATA_PIN, byte_array);
+void show_image(int data_pin, int grid[][ARRAY_SIZE]){
+    setLED(LATCH_PIN, CLOCK_PIN, data_pin, grid);
 }
 
 bool compare_images(){
@@ -185,8 +176,8 @@ void loop(){
     }
 
     if(currently_playing){
-        show_image(display_grid);
-        show_image(copy_grid);
+        show_image(DISPLAY_GRID_PIN, display_grid);
+        show_image(COPY_GRID_PIN, copy_grid);
         check_joystick_movement();
         flash_current_location();
         check_for_color_change(); 
