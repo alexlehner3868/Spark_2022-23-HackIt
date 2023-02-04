@@ -29,8 +29,8 @@ const int RED_PIN = 4;
 const int BLUE_PIN = 5;
 const int GREEN_PIN = 6;
 
-const int CHECK_BUTTON = 7;
-const int DELETE_COLOR = 8;
+const int CHECK_BUTTON_PIN = 7;
+const int DELETE_COLOR_PIN = 8;
 
 const int ARRAY_SIZE = 8;  
 const int LATCH_PIN = 11;
@@ -108,8 +108,17 @@ void setup(){
     pinMode(CLOCK_PIN, OUTPUT);
     pinMode(DISPLAY_GRID_PIN, OUTPUT);
     pinMode(COPY_GRID_PIN, OUTPUT);
+    // May need to change INPUT to INPUT_PULLUP
     // Setup joystick 
+    pinMode(JOYSTICK_DOWN_PIN, INPUT);
+    pinMode(JOYSTICK_UP_PIN, INPUT);
+    pinMode(JOYSTICK_LEFT_PIN, INPUT);
+    pinMode(JOYSTICK_RIGHT_PIN, INPUT);
     // Set up color buttons 
+    pinMode(RED_PIN, INPUT);
+    pinMode(GREEN_PIN, INPUT);
+    pinMode(BLUE_PIN, INPUT);
+    pinMode(CHECK_BUTTON_PIN, INPUT);
 
 }
 
@@ -140,30 +149,45 @@ void move_right() {
 }
 
 void check_joystick_movement() {
-  if (digitalRead(JOYSTICK_UP)) {
+  if (digitalRead(JOYSTICK_UP_PIN)) {
     move_up();
-  } else if (digitalRead(JOYSTICK_DOWN)) {
+  } else if (digitalRead(JOYSTICK_DOWN_PIN)) {
     move_down();
-  } else if (digitalRead(JOYSTICK_LEFT)) {
+  } else if (digitalRead(JOYSTICK_LEFT_PIN)) {
     move_left();
-  } else if (digitalRead(JOYSTICK_RIGHT)) {
+  } else if (digitalRead(JOYSTICK_RIGHT_PIN)) {
     move_right();
   } else {
   }
 }
 
+// Maybe need to delay in main loop for flashing to be visible
+// Currently toggle LED by bitwise OR to avoid the need of storing previous color
 void flash_current_location(){
     // flash the output led at current_user_x, current_user_y
+    copy_grid[leftright][updown] = ~copy_grid[leftright][updown];
 }
 
 void check_for_color_change(){
     //check if a color button has been pressed
     // if yes, update the output led's color at current_user_x, current_user_y
+    if (digitalRead(RED_PIN)) {
+        copy_grid[leftright][updown] = R;
+    }
+    if (digitalRead(BLUE_PIN)) {
+        copy_grid[leftright][updown] = B;
+    }
+    if (digitalRead(GREEN_PIN)) {
+        copy_grid[leftright][updown] = G;
+    }
 }
 
 void check_for_image_verify(){
     // check if the verify button has been pressed.
     // if pressed -> compare_images() 
+    if (digitalRead(CHECK_BUTTON_PIN)) {
+        compare_images();
+    }
 }
 
 void loop(){
