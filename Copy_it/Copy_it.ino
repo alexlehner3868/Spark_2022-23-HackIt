@@ -19,15 +19,15 @@ bool start_game = false;
 #define W 0b0111 // W(hite)
 
 
-const int JOYSTICK_UP = 0;
-const int JOYSTICK_DOWN = 1;
-const int JOYSTICK_LEFT = 2;
-const int JOYSTICK_RIGHT = 3;
+const int JOYSTICK_UP_PIN = 0;
+const int JOYSTICK_DOWN_PIN = 1;
+const int JOYSTICK_LEFT_PIN = 2;
+const int JOYSTICK_RIGHT_PIN = 3;
 
 
-const int RED = 4;
-const int BLUE = 5;
-const int GREEN = 6;
+const int RED_PIN = 4;
+const int BLUE_PIN = 5;
+const int GREEN_PIN = 6;
 
 const int CHECK_BUTTON = 7;
 const int DELETE_COLOR = 8;
@@ -37,7 +37,6 @@ const int LATCH_PIN = 11;
 const int CLOCK_PIN = 9;
 const int DISPLAY_GRID_PIN = 12;
 const int COPY_GRID_PIN = 8;
-const int REG_NUM = ARRAY_SIZE * ARRAY_SIZE / 2; // Number of shift registers to be used per grid
 
 int updown;
 int leftright;
