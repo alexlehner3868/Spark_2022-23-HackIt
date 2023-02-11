@@ -37,18 +37,18 @@ void loop()
   for (int i = 0; i < sizeof(pattern1)/sizeof(pattern1[0]); i++){
     bitSet(leds1, pattern1[i]);
     updateShiftRegister();
-    delay(500);
+//    delay(0);
   }
   
    for (int j = 0; j < sizeof(pattern2)/sizeof(pattern2[0]); j++){
     bitSet(leds2, pattern2[j]);
     updateShiftRegister();
-    delay(500);
+//    delay(500);
   }
   
   //Serial.println(leds1, BIN);
   //Serial.println(leds2, BIN);
-
+  delay(1000000);
 }
 
 
