@@ -9,8 +9,8 @@ int clockPin = 6; // clock pin of shift register
 byte leds1 = 0;   // each var controls leds in each shift register
 byte leds2 = 0; 
 
-int pattern1[] = {0, 1, 2, 3};
-int pattern2[] = {0, 1, 2, 3};
+int pattern1[] = {0, 1, 2, 3, 4, 5, 6, 7};
+int pattern2[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
 int pattern1_size = sizeof(pattern1)/sizeof(pattern1[0]);
 int pattern2_size = sizeof(pattern1)/sizeof(pattern1[0]);
