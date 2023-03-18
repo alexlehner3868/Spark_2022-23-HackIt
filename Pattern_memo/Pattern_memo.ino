@@ -23,8 +23,6 @@ int dataPin = 4;  // data pin of shift register
 byte leds1 = 0;   // each var controls leds in each shift register
 byte leds2 = 0; 
 
-
-
 double EPS = 5; // TEMPORARY
 double[] input_readings = {256, 511, 767, 1023};
 int[] analogPinRows = {A0};
@@ -85,7 +83,7 @@ void updateShiftRegister(){
    digitalWrite(latchPin, HIGH);
 }
 
-void updateLights(int pattern){
+void updateLights(int pattern){ // takes in a pattern, light up the necessary 
   leds1 = 0;  // initialize leds
   leds2 = 0;
   updateShiftRegister();

@@ -17,6 +17,19 @@ void setup()
 }
 
 
+// set the latchPin to low, then shift out contents of variable 
+//  'leds' in the shift register before putting the 'latchPin' 
+//  high again
+
+void updateShiftRegister()
+{
+   digitalWrite(latchPin, LOW);
+   shiftOut(dataPin, clockPin, LSBFIRST, leds2);
+   shiftOut(dataPin, clockPin, LSBFIRST, leds1);
+   digitalWrite(latchPin, HIGH);
+}
+
+
 void loop() 
 {
   leds1 = 0;	// initialize leds
@@ -37,29 +50,16 @@ void loop()
   for (int i = 0; i < sizeof(pattern1)/sizeof(pattern1[0]); i++){
     bitSet(leds1, pattern1[i]);
     updateShiftRegister();
-//    delay(0);
+    delay(500);
   }
   
    for (int j = 0; j < sizeof(pattern2)/sizeof(pattern2[0]); j++){
     bitSet(leds2, pattern2[j]);
     updateShiftRegister();
-//    delay(500);
+    delay(500);
   }
   
   //Serial.println(leds1, BIN);
   //Serial.println(leds2, BIN);
-  delay(1000000);
-}
-
-
-// set the latchPin to low, then shift out contents of variable 
-//	'leds' in the shift register before putting the 'latchPin' 
-// 	high again
-
-void updateShiftRegister()
-{
-   digitalWrite(latchPin, LOW);
-   shiftOut(dataPin, clockPin, LSBFIRST, leds2);
-   shiftOut(dataPin, clockPin, LSBFIRST, leds1);
-   digitalWrite(latchPin, HIGH);
+//  delay(1000000);
 }
