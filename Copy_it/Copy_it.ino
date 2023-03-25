@@ -1,7 +1,3 @@
-// TODO 
-// Brian -> set up real arrays 8x8, picture and output, 
-
-
 int selected_image_index = 0;
 int current_user_x = 0;
 int current_user_y = 0;
@@ -32,15 +28,22 @@ const int GREEN_PIN = 6;
 const int CHECK_BUTTON_PIN = 7;
 const int DELETE_COLOR_PIN = 8;
 
-const int ARRAY_SIZE = 8;  
+// const int ARRAY_SIZE = 8;  
+const int ARRAY_SIZE = 2;  
 const int LATCH_PIN = 11;
 const int CLOCK_PIN = 9;
 const int DISPLAY_GRID_PIN = 12;
 const int COPY_GRID_PIN = 8;
 
-int updown;
-int leftright;
+int updown = ARRAY_SIZE - 1;
+int leftright = ARRAY_SIZE - 1;
 
+
+int display_grid[ARRAY_SIZE][ARRAY_SIZE] = {{R, G},
+                                            {B, G}};
+int copy_grid[ARRAY_SIZE][ARRAY_SIZE] = {{B, G},
+                                        {G, B}};
+/*
 int display_grid[ARRAY_SIZE][ARRAY_SIZE] = {{R, G, B, N, R, G, B, N},
                                             {R, G, B, N, R, G, B, N}, 
                                             {R, G, B, N, R, G, B, N}, 
@@ -58,6 +61,10 @@ int copy_grid[ARRAY_SIZE][ARRAY_SIZE] =    {{R, G, B, N, R, G, B, N},
                                             {R, G, B, N, R, G, B, N}, 
                                             {R, G, B, N, R, G, B, N}, 
                                             {R, G, B, N, R, G, B, N}};
+*/
+
+int current_position_color = copy_grid[updown][leftright];
+double time_last_flash;
 
 // shift int grid values to shift registers
 void setLED(int latch_pin, int clock_pin, int data_pin, int grid[][ARRAY_SIZE]) {
@@ -110,47 +117,49 @@ void setup(){
     pinMode(COPY_GRID_PIN, OUTPUT);
     // May need to change INPUT to INPUT_PULLUP
     // Setup joystick 
-    pinMode(JOYSTICK_DOWN_PIN, INPUT);
-    pinMode(JOYSTICK_UP_PIN, INPUT);
-    pinMode(JOYSTICK_LEFT_PIN, INPUT);
-    pinMode(JOYSTICK_RIGHT_PIN, INPUT);
+    pinMode(JOYSTICK_DOWN_PIN, INPUT_PULLUP);
+    pinMode(JOYSTICK_UP_PIN, INPUT_PULLUP);
+    pinMode(JOYSTICK_LEFT_PIN, INPUT_PULLUP);
+    pinMode(JOYSTICK_RIGHT_PIN, INPUT_PULLUP);
     // Set up color buttons 
-    pinMode(RED_PIN, INPUT);
-    pinMode(GREEN_PIN, INPUT);
-    pinMode(BLUE_PIN, INPUT);
-    pinMode(CHECK_BUTTON_PIN, INPUT);
+    pinMode(RED_PIN, INPUT_PULLUP);
+    pinMode(GREEN_PIN, INPUT_PULLUP);
+    pinMode(BLUE_PIN, INPUT_PULLUP);
+    pinMode(CHECK_BUTTON_PIN, INPUT_PULLUP);
+    time_last_flash = millis();
+
+    Serial.begin(9600);
 
 }
-
 
 void move_up() {
   updown--;
   if (updown == -1) {
-    updown = 7;
+    updown = ARRAY_SIZE - 1;
   }
 }
 void move_down() {
   updown++;
-  if (updown == 8) {
+  if (updown == ARRAY_SIZE) {
     updown = 0;
   }
 }
 void move_left() {
   leftright--;
   if (leftright == -1) {
-    leftright = 7;
+    leftright = ARRAY_SIZE - 1;
   }
 }
 void move_right() {
   leftright++;
-  if (leftright == 8) {
+  if (leftright == ARRAY_SIZE) {
     leftright = 0;
   }
 }
 
 void check_joystick_movement() {
   if (digitalRead(JOYSTICK_UP_PIN)) {
-    move_up();
+    // move_up();
   } else if (digitalRead(JOYSTICK_DOWN_PIN)) {
     move_down();
   } else if (digitalRead(JOYSTICK_LEFT_PIN)) {
@@ -161,24 +170,60 @@ void check_joystick_movement() {
   }
 }
 
-// Maybe need to delay in main loop for flashing to be visible
-// Currently toggle LED by bitwise OR to avoid the need of storing previous color
 void flash_current_location(){
     // flash the output led at current_user_x, current_user_y
-    copy_grid[leftright][updown] = ~copy_grid[leftright][updown];
+    if ((millis() - time_last_flash ) > 500 || (millis() - time_last_flash) < 0) {
+      if (copy_grid[leftright][updown] == current_position_color) {
+        copy_grid[leftright][updown] = N;
+        // Serial.println("Flash dark");
+        // Serial.println(time_last_flash);
+      } else {
+        copy_grid[leftright][updown] = current_position_color;
+        // Serial.println("Flash bright");
+        // Serial.println(time_last_flash);
+      }
+      time_last_flash = millis();
+    }
 }
 
 void check_for_color_change(){
     //check if a color button has been pressed
     // if yes, update the output led's color at current_user_x, current_user_y
-    if (digitalRead(RED_PIN)) {
-        copy_grid[leftright][updown] = R;
-    }
-    if (digitalRead(BLUE_PIN)) {
-        copy_grid[leftright][updown] = B;
-    }
-    if (digitalRead(GREEN_PIN)) {
-        copy_grid[leftright][updown] = G;
+    // if (digitalRead(RED_PIN) == LOW) {
+    //     copy_grid[leftright][updown] = R;
+    //     current_position_color = R;
+    // }
+    // if (digitalRead(BLUE_PIN)) {
+    //     copy_grid[leftright][updown] = B;
+    //     current_position_color = B;
+    // }
+    // if (digitalRead(GREEN_PIN)) {
+    //     copy_grid[leftright][updown] = G;
+    //     current_position_color = G;
+    // }
+    if (digitalRead(RED_PIN) == LOW) {
+      // int current_time_diff = millis() - time_last_flash;
+      while (digitalRead(RED_PIN) == LOW); //Wait for button to be released
+      // time_last_flash = millis() + current_time_diff;
+      
+      switch (current_position_color) {
+       
+        case R:
+          copy_grid[leftright][updown] = G;
+          current_position_color = G;
+          break;
+        case G:
+          copy_grid[leftright][updown] = B;
+          current_position_color = B;
+          break;
+        case B:
+          copy_grid[leftright][updown] = R;
+          current_position_color = R;
+          break;
+        
+        default:
+          break;
+      }
     }
 }
 
@@ -191,6 +236,16 @@ void check_for_image_verify(){
 }
 
 void loop(){
+  show_image(COPY_GRID_PIN, copy_grid);
+  flash_current_location();
+  check_for_color_change();
+  check_joystick_movement();
+  
+  Serial.println("Printing position");
+  Serial.println(leftright);
+  Serial.println(updown);
+  delay(100);
+  /*
     if(start_game){
         clear_output();
         load_image();
@@ -206,123 +261,5 @@ void loop(){
         check_for_color_change(); 
         check_for_image_verify();
     }
+  */
 }
-
-
-
-/*** TEMPORARY holding for patterns
-* patterns are 8x8 and use only 3 colors each
-* given that the buttons are blue+red+green, the colors will 
-* each [] is one "pixel" and holds info for red, green, and blue
-* the array goes left to right, top to bottom
-* [R, G, B]
-* empty array means [0,0,0]
-* R means [1, 0, 0]
-* G means [0, 1, 0]
-* B means [0, 0, 1]
-* Y(ellow) means [1, 1, 0]
-* C(yan) means [0, 1, 1]
-* M(agenta) means [1, 0, 1]
-* W(hite) means [1, 1, 1]
-// apple
-
-heart_pattern = [
-  [], [], [], [], [], [], [], [],
-  [], R, [R], [], [R], [R], [], [],
-  [R], [W], [M], [R], [R], [R], [R], [],
-  [R], [M], [R], [R], [R], [M], [R], [],
-
-  [], [R], [R], [R], [M], [R], [], [],
-  [], [], [R], [R], [R], [], [], [],
-  [], [], [], [R], [], [], [], [],
-  [], [], [], [], [], [], [], []
-]
-key_pattern = [
-  [], [], [W], [Y], [Y], [], [], [],
-  [], [W], [], [], [], [Y], [], [],
-  [], [W], [], [], [], [Y], [], [],
-  [], [], [Y], [Y], [Y], [], [], [],
-
-  [], [], [], [Y], [], [], [], [],
-  [], [], [], [Y], [Y], [], [], [],
-  [], [], [], [Y], [], [], [], [],
-  [], [], [], [Y], [Y], [], [], []
-]
-skull_pattern = [
-  [], [], [], [], [], [], [], [],
-  [], [W], [W], [W], [W], [W], [], [],
-  [W], [], [], [W], [], [], [W], [],
-  [W], [], [R], [W], [], [R], [W], [],
-
-  [W], [W], [W], [W], [W], [W], [W], [],
-  [W], [W], [W], [], [W], [W], [W], [],
-  [], [W], [W], [W], [W], [W], [], [],
-  [], [W], [], [W], [], [W], [], []
-]
-lock_pattern = [
-  [], [], [W], [W], [W], [], [], [],
-  [], [W], [], [], [], [W], [], [],
-  [], [Y], [], [], [], [Y], [], [],
-  [Y], [Y], [Y], [Y], [Y], [Y], [Y], [],
-
-  [Y], [Y], [Y], [], [Y], [Y], [Y], [],
-  [Y], [Y], [Y], [], [Y], [Y], [Y], [],
-  [Y], [Y], [Y], [Y], [Y], [Y], [Y], [],
-  [], [Y], [Y], [Y], [Y], [Y], [], []
-]
-flask_pattern = [
-  [], [], [W], [W], [W], [W], [], [],
-  [], [], [], [W], [W], [], [], [],
-  [], [], [], [W], [W], [], [], [],
-  [], [], [W], [B], [B], [W], [], [],
-
-  [], [W], [B], [B], [B], [B], [W], [],
-  [W], [B], [B], [B], [B], [B], [B], [W],
-  [], [W], [W], [W], [W], [W], [W], [],
-  [], [], [], [], [], [], [], []
-]
-moon_pattern = [
-  [], [], [W], [W], [W], [W], [], [],
-  [], [W], [W], [W], [W], [W], [W], [],
-  [W], [W], [W], [W], [], [], [], [],
-  [W], [W], [W], [], [], [], [], [],
-
-  [W], [W], [W], [], [], [], [], [],
-  [W], [W], [W], [W], [], [], [], [],
-  [], [W], [W], [W], [W], [W], [W], [],
-  [], [], [W], [W], [W], [W], [], []
-]
-gun_pattern = [
-  [R], [R], [R], [R], [R], [R], [R], [R],
-  [R], [ ], [ ], [ ], [ ], [ ], [ ], [R],
-  [R], [ ], [R], [R], [R], [R], [R], [R],
-  [R], [ ], [R], [ ], [R], [ ], [ ], [ ],
-  [R], [ ], [R], [R], [R], [ ], [ ], [ ],
-  [R], [ ], [R], [ ], [ ], [ ], [ ], [ ],
-  [R], [ ], [R], [ ], [ ], [ ], [ ], [ ],
-  [R], [R], [R], [ ], [ ], [ ], [ ], [ ]
-]
-magnifying_glass_pattern = [
-  [ ], [W], [W], [W], [ ], [ ], [ ], [ ],
-  [W], [ ], [ ], [ ], [W], [ ], [ ], [ ], 
-  [W], [ ], [ ], [ ], [W], [ ], [ ], [ ], 
-  [W], [ ], [ ], [ ], [W], [ ], [ ], [ ], 
-  [W], [ ], [ ], [ ], [W], [ ], [ ], [ ], 
-  [ ], [W], [W], [W], [ ], [W], [ ], [ ],
-  [ ], [ ], [ ], [ ], [ ], [ ], [W], [ ],
-  [W], [ ], [ ], [ ], [ ], [ ], [ ], [W]
-]
-key_pattern = [
-  [ ], [ ], [ ], [W], [W], [ ], [ ], [ ],
-  [ ], [ ], [W], [ ], [ ], [W], [ ], [ ],
-  [ ], [ ], [W], [ ], [ ], [W], [ ], [ ],
-  [ ], [ ], [ ], [W], [W], [ ], [ ], [ ],
-  [ ], [ ], [ ], [W], [W], [ ], [ ], [ ],
-  [ ], [ ], [ ], [W], [W], [ ], [ ], [ ],
-  [ ], [ ], [ ], [W], [W], [W], [ ], [ ],
-  [ ], [ ], [ ], [W], [W], [W], [ ], [ ]
-]
-// key 
-
-
-*/
