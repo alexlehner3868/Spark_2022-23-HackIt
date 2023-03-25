@@ -162,13 +162,13 @@ void move_right() {
 }
 
 void check_joystick_movement() {
-  if (digitalRead(JOYSTICK_UP_PIN)) {
-    // move_up();
-  } else if (digitalRead(JOYSTICK_DOWN_PIN)) {
+  if (!digitalRead(JOYSTICK_UP_PIN)) {
+    move_up();
+  } else if (!digitalRead(JOYSTICK_DOWN_PIN)) {
     move_down();
-  } else if (digitalRead(JOYSTICK_LEFT_PIN)) {
+  } else if (!digitalRead(JOYSTICK_LEFT_PIN)) {
     move_left();
-  } else if (digitalRead(JOYSTICK_RIGHT_PIN)) {
+  } else if (!digitalRead(JOYSTICK_RIGHT_PIN)) {
     move_right();
   } else {
   }
