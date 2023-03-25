@@ -17,6 +17,19 @@ void setup()
 }
 
 
+// set the latchPin to low, then shift out contents of variable 
+//  'leds' in the shift register before putting the 'latchPin' 
+//  high again
+
+void updateShiftRegister()
+{
+   digitalWrite(latchPin, LOW);
+   shiftOut(dataPin, clockPin, LSBFIRST, leds2);
+   shiftOut(dataPin, clockPin, LSBFIRST, leds1);
+   digitalWrite(latchPin, HIGH);
+}
+
+
 void loop() 
 {
   leds1 = 0;	// initialize leds
@@ -48,18 +61,5 @@ void loop()
   
   //Serial.println(leds1, BIN);
   //Serial.println(leds2, BIN);
-
-}
-
-
-// set the latchPin to low, then shift out contents of variable 
-//	'leds' in the shift register before putting the 'latchPin' 
-// 	high again
-
-void updateShiftRegister()
-{
-   digitalWrite(latchPin, LOW);
-   shiftOut(dataPin, clockPin, LSBFIRST, leds2);
-   shiftOut(dataPin, clockPin, LSBFIRST, leds1);
-   digitalWrite(latchPin, HIGH);
+//  delay(1000000);
 }
