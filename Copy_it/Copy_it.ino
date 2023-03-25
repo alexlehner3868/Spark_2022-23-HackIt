@@ -205,7 +205,11 @@ void check_for_color_change(){
       // int current_time_diff = millis() - time_last_flash;
       while (digitalRead(RED_PIN) == LOW); //Wait for button to be released
       // time_last_flash = millis() + current_time_diff;
-      Serial.println("button pressed: ", current_position_color, updown, leftright);
+      Serial.print("button pressed: ");
+      Serial.print(current_position_color);
+      Serial.print( updown);
+      Serial.print(leftright);
+      Serial.println();
       switch (current_position_color) {
        
         case R:
@@ -241,7 +245,11 @@ void loop(){
   check_for_color_change();
   check_joystick_movement();
   
-  Serial.println("Printing position", leftright, updown);
+  Serial.print("Printing position");
+  Serial.print(updown);
+  Serial.print(leftright);
+  Serial.println("");
+
   delay(100);
   /*
     if(start_game){
