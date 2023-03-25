@@ -133,24 +133,28 @@ void setup(){
 }
 
 void move_up() {
+   Serial.println("UP");
   updown--;
   if (updown == -1) {
     updown = ARRAY_SIZE - 1;
   }
 }
 void move_down() {
+   Serial.println("DOWN");
   updown++;
   if (updown == ARRAY_SIZE) {
     updown = 0;
   }
 }
 void move_left() {
+  Serial.println("LEFT");
   leftright--;
   if (leftright == -1) {
     leftright = ARRAY_SIZE - 1;
   }
 }
 void move_right() {
+   Serial.println("RIGHT");
   leftright++;
   if (leftright == ARRAY_SIZE) {
     leftright = 0;
@@ -205,11 +209,13 @@ void check_for_color_change(){
       // int current_time_diff = millis() - time_last_flash;
       while (digitalRead(RED_PIN) == LOW); //Wait for button to be released
       // time_last_flash = millis() + current_time_diff;
+      /*
       Serial.print("button pressed: ");
       Serial.print(current_position_color);
       Serial.print( updown);
       Serial.print(leftright);
       Serial.println();
+      */
       switch (current_position_color) {
        
         case R:
@@ -244,12 +250,12 @@ void loop(){
   flash_current_location();
   check_for_color_change();
   check_joystick_movement();
-  
+  /*
   Serial.print("Printing position");
   Serial.print(updown);
   Serial.print(leftright);
   Serial.println("");
-
+  */
   delay(100);
   /*
     if(start_game){
