@@ -128,33 +128,33 @@ void setup(){
     pinMode(CHECK_BUTTON_PIN, INPUT_PULLUP);
     time_last_flash = millis();
 
-    Serial.begin(9600);
+    // Serial.begin(9600);
 
 }
 
 void move_up() {
-   Serial.println("UP");
+  //  Serial.println("UP");
   updown--;
   if (updown == -1) {
     updown = ARRAY_SIZE - 1;
   }
 }
 void move_down() {
-   Serial.println("DOWN");
+  //  Serial.println("DOWN");
   updown++;
   if (updown == ARRAY_SIZE) {
     updown = 0;
   }
 }
 void move_left() {
-  Serial.println("LEFT");
+  // Serial.println("LEFT");
   leftright--;
   if (leftright == -1) {
     leftright = ARRAY_SIZE - 1;
   }
 }
 void move_right() {
-   Serial.println("RIGHT");
+  //  Serial.println("RIGHT");
   leftright++;
   if (leftright == ARRAY_SIZE) {
     leftright = 0;
@@ -163,15 +163,31 @@ void move_right() {
 
 void check_joystick_movement() {
   if (!digitalRead(JOYSTICK_UP_PIN)) {
+    if (copy_grid[leftright][updown] == N) {
+      copy_grid[leftright][updown] = current_position_color;
+    }
     move_up();
+    current_position_color = copy_grid[leftright][updown];
   } else if (!digitalRead(JOYSTICK_DOWN_PIN)) {
+    if (copy_grid[leftright][updown] == N) {
+      copy_grid[leftright][updown] = current_position_color;
+    }
     move_down();
+    current_position_color = copy_grid[leftright][updown];
   } else if (!digitalRead(JOYSTICK_LEFT_PIN)) {
+    if (copy_grid[leftright][updown]) {
+      copy_grid[leftright][updown] = current_position_color;
+    }
     move_left();
+    current_position_color = copy_grid[leftright][updown];
   } else if (!digitalRead(JOYSTICK_RIGHT_PIN)) {
+    if (copy_grid[leftright][updown]) {
+      copy_grid[leftright][updown] = current_position_color;
+    }
     move_right();
-  } else {
-  }
+    current_position_color = copy_grid[leftright][updown];
+  } 
+  delay(100);
 }
 
 void flash_current_location(){
@@ -179,12 +195,8 @@ void flash_current_location(){
     if ((millis() - time_last_flash ) > 500 || (millis() - time_last_flash) < 0) {
       if (copy_grid[leftright][updown] == current_position_color) {
         copy_grid[leftright][updown] = N;
-        // Serial.println("Flash dark");
-        // Serial.println(time_last_flash);
       } else {
         copy_grid[leftright][updown] = current_position_color;
-        // Serial.println("Flash bright");
-        // Serial.println(time_last_flash);
       }
       time_last_flash = millis();
     }
@@ -209,13 +221,6 @@ void check_for_color_change(){
       // int current_time_diff = millis() - time_last_flash;
       while (digitalRead(RED_PIN) == LOW); //Wait for button to be released
       // time_last_flash = millis() + current_time_diff;
-      /*
-      Serial.print("button pressed: ");
-      Serial.print(current_position_color);
-      Serial.print( updown);
-      Serial.print(leftright);
-      Serial.println();
-      */
       switch (current_position_color) {
        
         case R:
@@ -230,7 +235,6 @@ void check_for_color_change(){
           copy_grid[leftright][updown] = R;
           current_position_color = R;
           break;
-        
         default:
           break;
       }
