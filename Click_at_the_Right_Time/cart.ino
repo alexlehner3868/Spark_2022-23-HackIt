@@ -7,6 +7,7 @@
 
 // CONSTANTS/GLOBAL DECLARATIONS
 struct CRGB leds[24];
+struct CRGB timer[7];
 CRGB *pastLed = NULL;
 int delaySpeed = 225;
 int currLed = 0;
@@ -23,8 +24,6 @@ long startTime;
 int stepsPerRevolution = 2038;
 int stepSize = stepsPerRevolution/8;
 
-bool prevStates[5] = {false};
-
 //CHANGE THIS VALUE (DELAY BETWEEN PULSES)
 // WHATEVER THE VALUE IS SHOULD BECOME 1 step every ___ms.
 int stepDelay = 3;
@@ -32,7 +31,10 @@ int stepDelay = 3;
 int stepper_pin[4] = {2, 3, 4, 5};
 
 void setup() {
-  LEDS.addLeds<WS2812B, 13, GRB>(leds, 24);
+  LEDS.addLeds<WS2812B, 11, GRB>(leds, 24);
+  LEDS.addLeds<WS2812B, 13, GRB>(timer, 5);
+
+  pinMode(8, INPUT_PULLUP);
   pinMode(12, INPUT_PULLUP);
 
   pinMode(2, OUTPUT);
@@ -45,16 +47,16 @@ void setup() {
   randElement = random(0, 24);
   numTargets = 7;
   lives = 3;
-  startPosition();
+  startPosition(); 
   startTime = millis();
 }
 
 // MAYBE MOVE BOTH WAYS?
 void startPosition() {
   //spin motor clockwise
-  for (int moveCount = 0; moveCount < numTargets; moveCount++) {
+  for (int moveCount = 7; moveCount > 0; moveCount--) {
     for (int stepCount = 0; stepCount < stepSize; stepCount++) {
-      step(false);
+      step(true);
       delay(stepDelay);
     }
   }
@@ -78,6 +80,25 @@ void step(bool clockwise) {
   for(uint8_t i=0;i<4;i++){
     digitalWrite(stepper_pin[i], phase_pattern[current_step][i]);
   }
+}
+
+void setToZero(){
+  bool stop = false;
+
+  while (!stop){
+
+    for (int stepCount = 0; stepCount < stepSize; stepCount++) {
+      step(true);
+      delay(stepDelay);
+
+      if (digitalRead(8) == HIGH){
+        stop = true;
+      }
+    }
+    if (digitalRead(8) == HIGH){
+      stop = true;
+    }
+  }  
 }
 
 // Function to select a new random target led and increase speed
@@ -327,6 +348,7 @@ void lose() {
 void loop() {
   // check loss (time)
   if (millis() - startTime > 30000) {
+    setToZero();
     lose();
   }
 
