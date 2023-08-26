@@ -390,7 +390,8 @@ void winJingle(){
   noTone(200);
   tone(tonePin,880);
   delay(400);
-  noTone(1100);
+  noTone(tonePin);
+  delay(50);
 }
 
 void missSound(){
