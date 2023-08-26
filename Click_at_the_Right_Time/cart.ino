@@ -23,6 +23,7 @@ long startTime;
 // int currPos = 1;
 int stepsPerRevolution = 2038;
 int stepSize = stepsPerRevolution/8;
+bool prevPressed = false;
 
 //CHANGE THIS VALUE (DELAY BETWEEN PULSES)
 // WHATEVER THE VALUE IS SHOULD BECOME 1 step every ___ms.
@@ -150,8 +151,13 @@ void clockwiseCycle() {
     FastLED.show();
 
     while (millis() < currTime + delaySpeed) {
+      if (digitalRead(12) == LOW) {
+        prevPressed = true;
+      } else {
+        prevPressed = false;
+      }
       // Check if user input was instated during correct time frame
-      if ((millis() - checkTime <= delaySpeed) && digitalRead(12) == LOW) {
+      if ((millis() - checkTime <= delaySpeed) && (prevPressed && digitalRead(12) == HIGH)) {
 
         //spin motor counter-clockwise
         for (int stepCount = 0; stepCount < stepSize; stepCount++) {
@@ -228,8 +234,13 @@ void counterclockwiseCycle() {
     FastLED.show();
 
     while (millis() < currTime + delaySpeed) {
+      if (digitalRead(12) == LOW) {
+        prevPressed = true;
+      } else {
+        prevPressed = false;
+      }
       // Check if user input was instated during correct time frame
-      if ((millis() - checkTime <= delaySpeed) && digitalRead(12) == LOW) {
+      if ((millis() - checkTime <= delaySpeed) && (prevPressed && digitalRead(12) == HIGH)) {
 
         //spin motor counter-clockwise
         for (int stepCount = 0; stepCount < stepSize; stepCount++) {
