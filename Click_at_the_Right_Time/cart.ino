@@ -1,23 +1,83 @@
 #include <FastLED.h>
+#include <Stepper.h>
+
+// 7 LIGHTS
+// 30 SECONDS
+// 3 LIVES
 
 // CONSTANTS/GLOBAL DECLARATIONS
 struct CRGB leds[24];
 CRGB *pastLed = NULL;
-int delaySpeed = 175;
+int delaySpeed = 225;
 int currLed = 0;
 bool clockwise = true;
 int randElement;
-int score;
-bool firstTimeThru = true;
+int numTargets;
+int lives;
+long startTime;
+//int steps = 13 * 1.3135;
+// const float small = 66;//.235;
+// const float big = 122;//.28;
+// int stepSize = small;
+// int currPos = 1;
+int stepsPerRevolution = 2038;
+int stepSize = stepsPerRevolution/8;
+
+bool prevStates[5] = {false};
+
+//CHANGE THIS VALUE (DELAY BETWEEN PULSES)
+// WHATEVER THE VALUE IS SHOULD BECOME 1 step every ___ms.
+int stepDelay = 3;
+
+int stepper_pin[4] = {2, 3, 4, 5};
 
 void setup() {
-  LEDS.addLeds<WS2812B, 11, GRB>(leds, 24);
+  LEDS.addLeds<WS2812B, 13, GRB>(leds, 24);
   pinMode(12, INPUT_PULLUP);
-  score = 1000;
+
+  pinMode(2, OUTPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  pinMode(5, OUTPUT);
 
   Serial.begin(9600);
   randomSeed(analogRead(0));
-  randElement = random(0,24);
+  randElement = random(0, 24);
+  numTargets = 7;
+  lives = 3;
+  startPosition();
+  startTime = millis();
+}
+
+// MAYBE MOVE BOTH WAYS?
+void startPosition() {
+  //spin motor clockwise
+  for (int moveCount = 0; moveCount < numTargets; moveCount++) {
+    for (int stepCount = 0; stepCount < stepSize; stepCount++) {
+      step(false);
+      delay(stepDelay);
+    }
+  }
+}
+
+// there are 2038 steps in one revolution supposedly
+void step(bool clockwise) {
+  const uint8_t phase_pattern[][4] = {
+    {1,0,0,0},
+    {0,1,0,0},
+    {0,0,1,0},
+    {0,0,0,1}
+  };
+
+  static uint8_t current_step = 0;
+  if(clockwise){
+    current_step = (current_step + 1) % 4;
+  } else {
+    current_step = (current_step - 1) % 4;
+  }
+  for(uint8_t i=0;i<4;i++){
+    digitalWrite(stepper_pin[i], phase_pattern[current_step][i]);
+  }
 }
 
 // Function to select a new random target led and increase speed
@@ -25,16 +85,14 @@ void reset() {
   int oldRand = randElement;
   leds[randElement] = CRGB::Black;
   FastLED.show();
-  randElement = random(0,24);
+  randElement = random(0, 24);
   // Re-select the randElement if it picks the same or an LED beside the old LED
   while (randElement == oldRand || randElement == (oldRand + 1) || randElement == (oldRand - 1)) {
-    randElement = random(0,24);
+    randElement = random(0, 24);
   }
   Serial.println(randElement);
   clockwise = !clockwise;
-  if (delaySpeed > 100) {
-    delaySpeed -= 25;
-  }
+  delaySpeed -= 25;
 }
 
 // Function to run clockwise/left to right direction
@@ -44,9 +102,10 @@ void clockwiseCycle() {
   long checkTime = 0;
   long currTime = 0;
   bool repeat = true;
-  bool successfullyPressed = false;
 
   for (int i = currLed; i < 24; i ++) {
+    bool invalPress = false;
+
     currTime = millis();
     // Indicate which led is currently selected
     // Vary indication based on if target led is selected
@@ -55,6 +114,7 @@ void clockwiseCycle() {
       checkTime = millis();
     } else {
       leds[i] = CRGB::Blue;
+      invalPress = true;
     }
 
     // Return previous led to its non-selected colour
@@ -67,40 +127,39 @@ void clockwiseCycle() {
     }
     pastLed = &leds[i];
     FastLED.show();
-    successfullyPressed = false;
-  
-    while(millis() < currTime + delaySpeed) {
+
+    while (millis() < currTime + delaySpeed) {
       // Check if user input was instated during correct time frame
-      long currTime2 = millis();
-      int firstTimeOffset = 0;
-      if (firstTimeThru){
-        firstTimeOffset = 175;
-      }
-      if ((currTime2 - checkTime <= delaySpeed) && digitalRead(12) == LOW) { 
-        Serial.println("pressed");
+      if ((millis() - checkTime <= delaySpeed) && digitalRead(12) == LOW) {
+
+        //spin motor counter-clockwise
+        for (int stepCount = 0; stepCount < stepSize; stepCount++) {
+          step(true);
+          delay(stepDelay);
+        }
+
+        // Check win (targets)
+        if (numTargets == 1) {
+          win();
+        } else {
+          numTargets -= 1;
+        }
+        // Check loss (lives)
+
         reset();
         // Adjust trackers
         currLed = i;
         checkTime = 0;
         repeat = false;
-        firstTimeThru = false;
-        successfullyPressed = true;
         break;
+      // } else if (invalPress && digitalRead(12) == LOW) {
+      //   if (lives == 0) {
+      //     lose();            
+      //   } else {
+      //     invalPress = false;
+      //     lives -= 1;
+      //   }  
       }
-      //MIGUEL: dock points if missed the press (didn't press at all)
-      else if ((currTime2 - checkTime <= delaySpeed-firstTimeOffset) && digitalRead(12) == HIGH){
-        Serial.println("let led pass over without pressing");
-        score = score - 5;
-        Serial.println(score);
-        checkTime = 0;
-        break;
-      }
-    }
-    if ((millis() - checkTime > delaySpeed) && digitalRead(12)== LOW && !successfullyPressed){
-      Serial.println("pressed at wrong time");
-      score = score - 10;
-      Serial.println(score);
-      repeat = true;
     }
     if (!repeat) {
       break;
@@ -120,9 +179,11 @@ void counterclockwiseCycle() {
   long checkTime = 0;
   long currTime = 0;
   bool repeat = true;
-  bool successfullyPressed = false
 
   for (int i = currLed; i >= 0; i --) {
+
+    bool invalPress = false;
+    
     currTime = millis();
     // Indicate which led is currently selected
     // Vary indication based on if target led is selected
@@ -130,6 +191,7 @@ void counterclockwiseCycle() {
       leds[i] = CRGB::LawnGreen;
       checkTime = millis();
     } else {
+      invalPress = true;
       leds[i] = CRGB::Blue;
     }
 
@@ -143,51 +205,135 @@ void counterclockwiseCycle() {
     }
     pastLed = &leds[i];
     FastLED.show();
-    successfullyPressed = false;
 
-    while(millis() < currTime + delaySpeed) {
-      long currTime3 = millis();
+    while (millis() < currTime + delaySpeed) {
       // Check if user input was instated during correct time frame
-      if ((currTime3 - checkTime <= delaySpeed) && digitalRead(12) == LOW) {
-        Serial.println("pressed");
+      if ((millis() - checkTime <= delaySpeed) && digitalRead(12) == LOW) {
+
+        //spin motor counter-clockwise
+        for (int stepCount = 0; stepCount < stepSize; stepCount++) {
+          step(true);
+          delay(stepDelay);
+        }
+
+        // Check win (targets)
+        if (numTargets == 1) {
+          win();
+        } else {
+          numTargets -= 1;
+        }
+        // Check loss (lives)
+        
         reset();
         // Adjust trackers
         currLed = i;
         checkTime = 0;
         repeat = false;
-        successfullyPressed = true;
         break;
+      // } else if (invalPress && digitalRead(12) == LOW) {
+      //   if (lives == 0) {
+      //     lose();
+      //   } else {
+      //     invalPress = false;
+      //     lives -= 1;
+      //   }  
       }
-      else if ((currTime3 - checkTime <= delaySpeed) && digitalRead(12) == HIGH){
-        Serial.println("let led pass over without pressing");
-        score = score - 5;
-        Serial.println(score);
-        checkTime = 0;
-        break;
-      }
-      
-    }
-    if ((millis() - checkTime > delaySpeed) && digitalRead(12)== LOW && !successfullyPressed){
-      Serial.println("pressed at wrong time");
-      score = score - 10;
-      Serial.println(score);
-      repeat = true;
     }
     if (!repeat) {
       break;
     }
   }
-  
+
   // Reset index if target was not correctly pressed
   if (repeat) {
     currLed = 23;
   }
 }
 
+// Function to run win animation
+void win(){
+  while(1){
+    for (int i = 0;i<24;i++){
+      if (i%2 != 0){
+        leds[i] = CRGB::CRGB::LawnGreen;
+        FastLED.show();
+        delay(75);
+      }
+    }
+
+    for (int i = 0;i<24;i++){
+      if (i%2 == 0){
+        leds[i] = CRGB::CRGB::LawnGreen;
+        FastLED.show();
+        delay(75);
+      }
+    }
+
+    for (int i = 0; i<24; i++){
+      leds[i] = CRGB::Black;
+    }
+    FastLED.show();
+    delay(500);
+    for (int loopNum = 0; loopNum<2;loopNum++){
+      for (int i =0; i<24;i++){
+        leds[i] = CRGB::CRGB::LawnGreen;
+      }
+      FastLED.show();
+      delay(500);
+      for (int i = 0; i<24; i++){
+        leds[i] = CRGB::Black;
+      }
+      FastLED.show();
+      delay(500);
+    }
+  }
+}
+
+// Function to run lose animation
+void lose() {
+  while(1){
+    bool flip = true;
+    for (int i = 0; i < 3; i++) {
+      if (flip) {
+        for (int i = 0; i <= 2; i++) {
+          leds[i] = CRGB::Red;
+          leds[3 + i] = CRGB::Black;
+          leds[6 + i] = CRGB::Red;
+          leds[9 + i] = CRGB::Black;
+          leds[12 + i] = CRGB::Red;
+          leds[15 + i] = CRGB::Black;
+          leds[18 + i] = CRGB::Red;
+          leds[21 + i] = CRGB::Black;
+        }
+      } else {
+        for (int i = 0; i <= 2; i++) {
+          leds[i] = CRGB::Black;
+          leds[3 + i] = CRGB::Red;
+          leds[6 + i] = CRGB::Black;
+          leds[9 + i] = CRGB::Red;
+          leds[12 + i] = CRGB::Black;
+          leds[15 + i] = CRGB::Red;
+          leds[18 + i] = CRGB::Black;
+          leds[21 + i] = CRGB::Red;
+        }
+      }
+      flip = !flip;
+      FastLED.show();
+      delay(175);
+    }
+  }
+}
+
 void loop() {
+  // check loss (time)
+  if (millis() - startTime > 30000) {
+    lose();
+  }
+
   leds[randElement] = CRGB::Yellow;
   FastLED.show();
-  if (clockwise) { 
+
+  if (clockwise) {
     clockwiseCycle();
   } else {
     counterclockwiseCycle();
