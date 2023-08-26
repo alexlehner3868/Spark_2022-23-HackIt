@@ -16,6 +16,7 @@ int randElement;
 int numTargets;
 int lives;
 long startTime;
+int tonePin = 6;
 //int steps = 13 * 1.3135;
 // const float small = 66;//.235;
 // const float big = 122;//.28;
@@ -37,11 +38,13 @@ void setup() {
 
   pinMode(8, INPUT_PULLUP);
   pinMode(12, INPUT_PULLUP);
+  pinMode(tonePin, OUTPUT);
 
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
   pinMode(5, OUTPUT);
+  pinMode(tonePin, OUTPUT);
 
   Serial.begin(9600);
   randomSeed(analogRead(0));
@@ -158,7 +161,7 @@ void clockwiseCycle() {
       }
       // Check if user input was instated during correct time frame
       if ((millis() - checkTime <= delaySpeed) && (prevPressed && digitalRead(12) == HIGH)) {
-
+        hitSound();
         //spin motor counter-clockwise
         for (int stepCount = 0; stepCount < stepSize; stepCount++) {
           step(true);
@@ -167,6 +170,7 @@ void clockwiseCycle() {
 
         // Check win (targets)
         if (numTargets == 1) {
+          winJingle();
           win();
         } else {
           numTargets -= 1;
@@ -241,7 +245,7 @@ void counterclockwiseCycle() {
       }
       // Check if user input was instated during correct time frame
       if ((millis() - checkTime <= delaySpeed) && (prevPressed && digitalRead(12) == HIGH)) {
-
+        hitSound();
         //spin motor counter-clockwise
         for (int stepCount = 0; stepCount < stepSize; stepCount++) {
           step(true);
@@ -250,6 +254,7 @@ void counterclockwiseCycle() {
 
         // Check win (targets)
         if (numTargets == 1) {
+          winJingle();
           win();
         } else {
           numTargets -= 1;
@@ -356,10 +361,61 @@ void lose() {
   }
 }
 
+void loseJingle(){
+  tone(tonePin,349);
+  delay(400);
+  tone(tonePin,256);
+  delay(400);
+  tone(tonePin,172);
+  delay(700);
+  noTone(tonePin);
+  delay(50);
+}
+
+void winJingle(){
+  tone(tonePin,440);
+  delay(400);
+  noTone(100); 
+  tone(tonePin,660);
+  delay(200);
+  noTone(500); 
+  tone(tonePin,880);
+  delay(200);
+  noTone(500);
+  tone(tonePin,880);
+  delay(200);
+  noTone(200);  
+  tone(tonePin,880);
+  delay(200);
+  noTone(200);
+  tone(tonePin,880);
+  delay(400);
+  noTone(1100);
+}
+
+void missSound(){
+  tone(tonePin,200);
+  delay(50);
+  tone(tonePin,100);
+  delay(200);
+  noTone(tonePin);
+  delay(50);
+}
+
+void hitSound(){
+  tone(tonePin,300);
+  delay(100);
+  tone(tonePin,400);
+  delay(50);
+  noTone(tonePin);
+  delay(50);
+}
+
 void loop() {
   // check loss (time)
   if (millis() - startTime > 30000) {
     setToZero();
+    loseJingle();
     lose();
   }
 
